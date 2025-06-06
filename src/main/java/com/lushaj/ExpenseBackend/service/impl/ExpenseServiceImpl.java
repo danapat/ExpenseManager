@@ -2,6 +2,7 @@ package com.lushaj.ExpenseBackend.service.impl;
 
 import com.lushaj.ExpenseBackend.dto.ExpenseDTO;
 import com.lushaj.ExpenseBackend.entity.ExpenseEntity;
+import com.lushaj.ExpenseBackend.exceptions.ResourceNotFoundException;
 import com.lushaj.ExpenseBackend.repository.ExpenseRepository;
 import com.lushaj.ExpenseBackend.service.ExpenseService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,13 @@ public class ExpenseServiceImpl implements ExpenseService {
         List<ExpenseDTO> listOfExpenses = list.stream().map(expenseEntity -> mapToExpenseDTO(expenseEntity)).collect(Collectors.toList());
         // return the list
         return listOfExpenses;
+    }
+
+    @Override
+    public ExpenseDTO getExpenseByExpenseId(String expenseId) {
+        ExpenseEntity optionalExpense = expenseRepository.findByExpenseId(expenseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId));
+        return mapToExpenseDTO(optionalExpense);
     }
 
     private ExpenseDTO mapToExpenseDTO(ExpenseEntity expenseEntity) {
