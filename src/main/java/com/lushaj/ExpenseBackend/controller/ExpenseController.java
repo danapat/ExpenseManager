@@ -3,6 +3,7 @@ package com.lushaj.ExpenseBackend.controller;
 import com.lushaj.ExpenseBackend.dto.ExpenseDTO;
 import com.lushaj.ExpenseBackend.io.ExpenseResponse;
 import com.lushaj.ExpenseBackend.service.ExpenseService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
