@@ -15,7 +15,8 @@ import java.util.Date;
 @Builder
 public class ExpenseResponse {
 
-    private String id;
+
+    private String expenseId;
 
     private String name;
 
