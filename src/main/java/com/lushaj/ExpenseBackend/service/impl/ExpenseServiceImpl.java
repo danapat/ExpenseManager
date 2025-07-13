@@ -42,4 +42,13 @@ public class ExpenseServiceImpl implements ExpenseService {
     private ExpenseDTO mapToExpenseDTO(ExpenseEntity expenseEntity) {
         return modelMapper.map(expenseEntity, ExpenseDTO.class);
     }
+
+    @Override
+    public void deleteExpenseByExpenseId(String expenseId) {
+        // Optional: check if expense exists, sonst Exception werfen
+        ExpenseEntity entity = expenseRepository.findByExpenseId(expenseId)
+                .orElseThrow(() -> new RuntimeException("Expense not found"));
+
+        expenseRepository.delete(entity);
+    }
 }
