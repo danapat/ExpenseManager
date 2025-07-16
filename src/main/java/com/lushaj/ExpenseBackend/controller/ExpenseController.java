@@ -1,20 +1,20 @@
 package com.lushaj.ExpenseBackend.controller;
 
 import com.lushaj.ExpenseBackend.dto.ExpenseDTO;
+import com.lushaj.ExpenseBackend.io.ExpenseRequest;
 import com.lushaj.ExpenseBackend.io.ExpenseResponse;
 import com.lushaj.ExpenseBackend.service.ExpenseService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * this is controller class for Expense module
- * @author or
- */
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -24,10 +24,6 @@ public class ExpenseController {
     private final ExpenseService expenseService;
     private final ModelMapper modelMapper;
 
-    /**
-     * it will fetch the expenses from database
-     * @return list
-     */
     @GetMapping("/expenses")
     public List<ExpenseResponse> getExpenses(){
         log.info("API GET /expenses called");
@@ -48,20 +44,27 @@ public class ExpenseController {
         log.info("Printing the expense id {}", expenseId);
         ExpenseDTO expenseDTO = expenseService.getExpenseByExpenseId(expenseId);
         return mapToExpenseResponse(expenseDTO);
-
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/expenses/{expenseId}")
     public void deleteExpenseById(@PathVariable String expenseId) {
         log.info("Deleting expense with ID: {}", expenseId);
         expenseService.deleteExpenseByExpenseId(expenseId);
     }
 
-/**
- * Mapper method for converting expense dto object to expense response
- * @param expenseDTO
- * @return ExpenseResponse
- * */
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/expenses")
+    public ExpenseResponse saveExpenseDetails(@Valid @RequestBody ExpenseRequest expenseRequest) {
+        log.info("API POST /expenses called {}", expenseRequest);
+        ExpenseDTO expenseDTO = mapToExpenseDTO(expenseRequest);
+        expenseDTO = expenseService.saveExpenseDetails(expenseDTO);
+        return mapToExpenseResponse(expenseDTO);
+    }
+
+    private ExpenseDTO mapToExpenseDTO(@Valid ExpenseRequest expenseRequest) {
+        return modelMapper.map(expenseRequest, ExpenseDTO.class);
+    }
 
     private ExpenseResponse mapToExpenseResponse(ExpenseDTO expenseDTO) {
         return modelMapper.map(expenseDTO, ExpenseResponse.class);
