@@ -4,6 +4,7 @@ import com.lushaj.ExpenseBackend.dto.ExpenseDTO;
 import com.lushaj.ExpenseBackend.io.ExpenseRequest;
 import com.lushaj.ExpenseBackend.io.ExpenseResponse;
 import com.lushaj.ExpenseBackend.service.ExpenseService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
