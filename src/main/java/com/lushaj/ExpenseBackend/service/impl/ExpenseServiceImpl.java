@@ -11,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,22 +35,33 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     @Override
     public ExpenseDTO getExpenseByExpenseId(String expenseId) {
-        ExpenseEntity expenseEntity = getExpenseEntity(expenseId);
-        log.info("Printing the expense entity details {}", expenseEntity);
-        return mapToExpenseDTO(expenseEntity);
+        ExpenseEntity optionalExpense = expenseRepository.findByExpenseId(expenseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId));
+        return mapToExpenseDTO(optionalExpense);
     }
-        @Override
-        public void deleteExpenseByExpenseId (String expenseId){
-            ExpenseEntity expenseEntity = getExpenseEntity(expenseId);
-            log.info("Printing the expense entity {}", expenseEntity);
-            expenseRepository.delete(expenseEntity);
-        }
+
     private ExpenseDTO mapToExpenseDTO(ExpenseEntity expenseEntity) {
         return modelMapper.map(expenseEntity, ExpenseDTO.class);
     }
 
-    private ExpenseEntity getExpenseEntity(String expenseId) {
-        return expenseRepository.findByExpenseId(expenseId)
-                .orElseThrow(() -> new ResourceNotFoundException("Expense not found with id: " + expenseId));
+    @Override
+    public void deleteExpenseByExpenseId(String expenseId) {
+        // Optional: check if expense exists, sonst Exception werfen
+        ExpenseEntity entity = expenseRepository.findByExpenseId(expenseId)
+                .orElseThrow(() -> new RuntimeException("Expense not found"));
+
+        expenseRepository.delete(entity);
+    }
+
+    @Override
+    public ExpenseDTO saveExpenseDetails(ExpenseDTO expenseDTO) {
+        ExpenseEntity newExpenseEntity = mapToExpenseEntity(expenseDTO);
+        newExpenseEntity.setExpenseId(UUID.randomUUID().toString());
+        newExpenseEntity = expenseRepository.save(newExpenseEntity);
+        return mapToExpenseDTO(newExpenseEntity);
+    }
+
+    private ExpenseEntity mapToExpenseEntity(ExpenseDTO expenseDTO) {
+        return modelMapper.map(expenseDTO, ExpenseEntity.class);
     }
 }
