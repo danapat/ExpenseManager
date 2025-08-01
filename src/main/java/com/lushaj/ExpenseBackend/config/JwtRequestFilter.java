@@ -1,5 +1,6 @@
 package com.lushaj.ExpenseBackend.config;
 
+import com.lushaj.ExpenseBackend.service.TokenBlacklistService;
 import com.lushaj.ExpenseBackend.service.impl.CustomUserDetailsService;
 import com.lushaj.ExpenseBackend.util.JwtTokenUtil;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -27,6 +28,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
+    private TokenBlacklistService tokenBlacklistService;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         final String requestTokenHeader = request.getHeader("Authorization");
@@ -36,6 +39,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
             jwtToken = requestTokenHeader.substring(7);
+
+            if (jwtToken != null && tokenBlacklistService.isTokenBlacklisted(jwtToken)) {
+                response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
 
             try {
                 email = jwtTokenUtil.getUsernameFromToken(jwtToken);

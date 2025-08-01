@@ -33,7 +33,6 @@ public class SecurityConfig {
                         .anyRequest()
                         .authenticated()
                 )
-                .formLogin(Customizer.withDefaults())
                 .logout(logout -> logout
                         .logoutUrl("/logout") // default
                         .logoutSuccessUrl("/login?logout") // wohin nach dem Logout?
