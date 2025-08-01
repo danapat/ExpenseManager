@@ -6,16 +6,21 @@ import com.lushaj.ExpenseBackend.io.AuthResponse;
 import com.lushaj.ExpenseBackend.io.ProfileRequest;
 import com.lushaj.ExpenseBackend.io.ProfileResponse;
 import com.lushaj.ExpenseBackend.service.ProfileService;
+import com.lushaj.ExpenseBackend.service.TokenBlacklistService;
 import com.lushaj.ExpenseBackend.service.impl.CustomUserDetailsService;
 import com.lushaj.ExpenseBackend.util.JwtTokenUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -36,6 +41,10 @@ public class AuthController {
 
     private final CustomUserDetailsService userDetailsService;
 
+    private final PasswordEncoder encoder;
+
+    private final TokenBlacklistService tokenBlacklistService;
+
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/register")
@@ -49,10 +58,33 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse authenticate(@Valid @RequestBody AuthRequest authRequest) {
         log.info("API / login is called {}", authRequest);
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        authRequest.getEmail(),
+                        authRequest.getPassword()
+                )
+        );
+
         final UserDetails userDetails = userDetailsService.loadUserByUsername(authRequest.getEmail());
         final String token = jwtTokenUtil.generateToken(userDetails);
         return new AuthResponse(token, authRequest.getEmail());
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping("/signout")
+    public void signout(HttpServletRequest request) {
+        String jwtToken = extractJwtTokenFromRequest(request);
+        if (jwtToken != null) {
+            tokenBlacklistService.addTokenToBlacklist(jwtToken);
+        }
+    }
+
+    private String extractJwtTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader(AUTH_TOKEN_HEADER);
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 
     private ProfileDTO mapToProfileDTO(@Valid ProfileRequest profileRequest) {
