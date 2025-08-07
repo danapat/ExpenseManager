@@ -28,6 +28,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
+    @Autowired
     private TokenBlacklistService tokenBlacklistService;
 
     @Override

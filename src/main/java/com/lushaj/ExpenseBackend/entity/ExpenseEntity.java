@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
@@ -13,7 +15,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 @Entity
-@Table(name ="tbl_expenses")
+@Table(name = "tbl_expenses")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -43,4 +45,9 @@ public class ExpenseEntity {
     @UpdateTimestamp
     @Column
     private Timestamp updatedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY,  optional = false)
+    @JoinColumn(name = "owner_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private ProfileEntity owner;
 }
